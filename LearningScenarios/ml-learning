@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: sklearn-train-pipeline
+  annotations:
+    scenarios.ai.sap.com/name: "ML Tutorial Scenario"
+    executables.ai.sap.com/name: "Train Sklearn Model execute"
+  labels:
+    scenarios.ai.sap.com/id: "ml-learning"
+    ai.sap.com/version: "1.0"
+
+spec:
+  entrypoint: train-pipeline
+
+  templates:
+
+  - name: train-pipeline
+    steps:
+      - - name: train
+          template: trainer
+
+  - name: trainer
+    container:
+      image: python:3.9
+      command: ["python", "-c"]
+      args:
+        - |
+          import joblib
+          from sklearn.datasets import load_iris
+          from sklearn.linear_model import LogisticRegression
+
+          print("Loading dataset...")
+          X, y = load_iris(return_X_y=True)
+
+          print("Training model...")
+          model = LogisticRegression(max_iter=200)
+          model.fit(X, y)
+
+          print("Saving model...")
+          joblib.dump(model, "/tmp/model.joblib")
+
+          print("Training completed successfully!")
